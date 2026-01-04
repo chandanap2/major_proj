@@ -3,6 +3,7 @@ import os
 from api.routes import posture_bp
 from config import get_config
 from flask import Flask
+from flask_cors import CORS
 
 
 def create_app(config_obj=None):
@@ -17,6 +18,9 @@ def create_app(config_obj=None):
     """
     # Create Flask app
     app = Flask(__name__)
+    
+    # Enable CORS
+    CORS(app)
 
     # Load configuration
     if config_obj is None:
@@ -36,4 +40,5 @@ def create_app(config_obj=None):
 if __name__ == "__main__":
     app = create_app()
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    print(f"🚀 Posture Analysis Service starting on http://localhost:{port}", flush=True)
+    app.run(host="0.0.0.0", port=port, debug=True)

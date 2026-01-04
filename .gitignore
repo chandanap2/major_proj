@@ -1,8 +1,11 @@
 # Custom
 tmp/
-
-.DS_Store
-/node_modules/
+backup/
+**/.env
+**/logs/
+**/__pycache__/
+**/node_modules/
+**/.DS_Store
 
 # React Router
 /.react-router/
