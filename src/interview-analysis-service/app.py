@@ -4,6 +4,7 @@ import os
 from api.routes import interview_api
 from config import Config
 from flask import Flask
+from flask_cors import CORS
 from utils.nltk_setup import ensure_nltk_resources
 
 
@@ -19,6 +20,9 @@ def create_app(config_class=Config):
     """
     # Create Flask app
     app = Flask(__name__)
+    
+    # Enable CORS
+    CORS(app)
 
     # Load configuration
     app.config.from_object(config_class)
@@ -70,4 +74,6 @@ ensure_nltk_resources()
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 4000)))
+    port = int(os.environ.get("PORT", 4000))
+    print(f"🚀 Interview Analysis Service starting on http://localhost:{port}", flush=True)
+    app.run(host="0.0.0.0", port=port, debug=True)
