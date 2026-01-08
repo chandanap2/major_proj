@@ -1,4 +1,4 @@
-# AceInterview - Quick Start Commands
+# Ai based mock interview evaluator  - Quick Start Commands
 
 ## 🛠️ First Time Setup
 

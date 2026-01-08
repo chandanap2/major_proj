@@ -15,7 +15,7 @@ export default function Navbar() {
             <Link to="/" className="flex items-center">
               <Brain className="h-8 w-8 text-indigo-600" />
               <span className="ml-2 text-xl font-bold text-gray-800">
-                AceInterview
+                Ai based mock interview evaluator 
               </span>
             </Link>
           </div>
@@ -27,12 +27,6 @@ export default function Navbar() {
               className="text-gray-600 hover:text-indigo-600 transition-colors"
             >
               Home
-            </Link>
-            <Link
-              to="/about"
-              className="text-gray-600 hover:text-indigo-600 transition-colors"
-            >
-              About
             </Link>
             <Link
               to="/architecture"
@@ -74,13 +68,6 @@ export default function Navbar() {
               onClick={toggleMenu}
             >
               Home
-            </Link>
-            <Link
-              to="/about"
-              className="block px-3 py-2 text-gray-600 hover:text-indigo-600 transition-colors"
-              onClick={toggleMenu}
-            >
-              About
             </Link>
             <Link
               to="/architecture"

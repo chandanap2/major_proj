@@ -144,7 +144,7 @@ export default function HealthCheck() {
               System Health Status
             </h1>
             <p className="text-xl max-w-3xl mx-auto">
-              Monitor the operational status of all AceInterview services
+              Monitor the operational status of all Ai based mock interview evaluator  services
             </p>
           </motion.div>
         </div>
@@ -323,7 +323,7 @@ export default function HealthCheck() {
                   All systems operational
                 </p>
                 <p className="text-gray-600 mt-2">
-                  AceInterview services are running normally
+                  Ai based mock interview evaluator  services are running normally
                 </p>
               </div>
             )}

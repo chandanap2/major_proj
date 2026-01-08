@@ -12,7 +12,7 @@ import {
 import type { Route } from "../+types/root";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "AceInterview | About us" }];
+  return [{ title: "Ai based mock interview evaluator  | About us" }];
 }
 
 export default function Architecture() {

@@ -12,5 +12,4 @@ type Params = {
   "/health-check": {};
   "/analysis": {};
   "/contact": {};
-  "/about": {};
 };

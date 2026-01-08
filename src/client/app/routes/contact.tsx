@@ -3,7 +3,7 @@ import { Mail, MapPin, Phone, Send } from "lucide-react";
 import type { Route } from "../+types/root";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "AceInterview | About us" }];
+  return [{ title: "Ai based mock interview evaluator  | About us" }];
 }
 
 export default function Contact() {
@@ -22,7 +22,7 @@ export default function Contact() {
               Get in Touch
             </h1>
             <p className="text-xl max-w-3xl mx-auto">
-              Have questions about AceInterview? We're here to help!
+              Have questions about Ai based mock interview evaluator ? We're here to help!
             </p>
           </motion.div>
         </div>

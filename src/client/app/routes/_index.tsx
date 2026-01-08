@@ -6,7 +6,7 @@ import { Link } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "AceInterview | Home" },
+    { title: "Ai based mock interview evaluator  | Home" },
     {
       name: "description",
       content:
@@ -100,7 +100,7 @@ export default function Home() {
           </h2>
           <p className="text-xl mb-8">
             Join thousands of candidates who have improved their interview
-            skills with AceInterview
+            skills with Ai based mock interview evaluator 
           </p>
           <Link
             to="/analysis"
