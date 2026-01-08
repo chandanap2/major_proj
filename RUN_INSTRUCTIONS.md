@@ -31,8 +31,6 @@ Open 3 separate terminal windows and run these commands.
 ### Terminal 1: Interview Analysis Service (Port 4000)
 ```powershell
 cd src/interview-analysis-service
-# Replace with your actual API key if needed
-$env:ASSEMBLYAI_API_KEY="d16c0d2e89e64670bc77f0ddcafe5744"
 conda run -n interview-analysis-env python -u app.py
 ```
 

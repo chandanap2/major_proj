@@ -1,229 +1,196 @@
-# AceInterview - AI Driven Interview Preparation System
+# AceInterview - AI-Driven Interview Preparation System
 
-<!-- PROJECT SHIELDS -->
+AceInterview is a comprehensive, multimodal AI system designed to help candidates prepare for interviews. It analyzes video interviews to provide actionable feedback on **verbal communication**, **emotional expression**, and **body posture**.
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+The system is built on a microservices architecture, separating concerns into three distinct components: a frontend client, an interview analysis backend, and a posture analysis backend.
 
-<!-- PROJECT LOGO -->
-<div align="center">
-  <a href="https://github.com/gargujjwal/aceinterview">
-    <img src="./readme-assets/logo.png" alt="Logo" width="120">
-  </a>
-  <h3 align="center">AI-Powered Multimodal Interview Analysis</h3>
-  <p align="center">
-    Revolutionizing interview preparation through behavioral analytics and AI-driven feedback
-    <br />
-    <a href="https://github.com/gargujjwal/aceinterview"><strong>Explore Documentation »</strong></a>
-  </p>
-</div>
+---
 
-## Table of Contents
+## 🏗️ System Architecture
 
-- [AceInterview - AI Driven Interview Preparation System](#aceinterview---ai-driven-interview-preparation-system)
-  - [Table of Contents](#table-of-contents)
-  - [About The Project](#about-the-project)
-    - [Screenshots](#screenshots)
-  - [Key Features](#key-features)
-  - [Methodology](#methodology)
-    - [Data Acquisition](#data-acquisition)
-    - [Data Processing \& Attribute Extraction](#data-processing--attribute-extraction)
-    - [Predictive Modeling](#predictive-modeling)
-    - [Feedback Generation](#feedback-generation)
-    - [System Implementation](#system-implementation)
-  - [System Architecture](#system-architecture)
-  - [Installation](#installation)
-    - [Prerequisites](#prerequisites)
-    - [Setup Instructions](#setup-instructions)
-  - [Built With](#built-with)
-  - [License](#license)
-  - [Contact](#contact)
-  - [Acknowledgements](#acknowledgements)
+The project follows a decoupled **Microservices Architecture**:
 
-## About The Project
+1.  **Frontend Client (`src/client`)**: A React-based Single Page Application (SPA) where users record/upload videos and view results.
+2.  **Interview Analysis Service (`src/interview-analysis-service`)**: A Python Flask service responsible for speech-to-text, prosody analysis, facial emotion recognition, and personality trait prediction.
+3.  **Posture Analysis Service (`src/posture-analysis-service`)**: A Python Flask service responsible for analyzing body language and posture using computer vision.
 
-AceInterview is an AI-driven platform that provides comprehensive interview preparation through advanced analysis of verbal and non-verbal communication. Leveraging machine learning, computer vision, and NLP techniques, the system evaluates candidates' performance across multiple dimensions to deliver personalized feedback and actionable insights.
+---
 
-### Screenshots
+## 🔍 Deep Dive: Services & Models
 
-![Homepage](./readme-assets/frontend/homepage.png)
-![About Us Page](./readme-assets/frontend/about-us-page.png)
-![Contact Page](./readme-assets/frontend/contact-page.png)
-![Architecture Page](./readme-assets/frontend/arch-page.png)
-![System Health Check Page](./readme-assets/frontend/health-check-page.png)
-![Interview Analysis Result Page](./readme-assets/frontend/interview-analysis.png)
-![Posture Analysis Result Page](./readme-assets/frontend/posture-analysis.png)
+### 1. Interview Analysis Service (Port 4000)
+This service performs comprehensive behavioral analysis using multiple models and libraries.
 
-## Key Features
+#### **Core Workflow**
+1.  **Input**: Receives a `video` file via API.
+2.  **Transcription**: Uses **AssemblyAI** API to convert speech to text with high accuracy.
+3.  **Feature Extraction**:
+    *   **Lexical (Text) Analysis**: Uses **NLTK (Natural Language Toolkit)** to tokenize words and match them against a custom LIWC-like dictionary (Linguistic Inquiry and Word Count). It detects categories like *Positive Emotion*, *Cognitive Words*, *Filler Words* (Ah, Um), and *Tentative Language*.
+    *   **Prosodic (Audio) Analysis**: Uses **Parselmouth (Praat)** to extract acoustic features such as:
+        *   **Pitch (F0)**: Mean, standard deviation.
+        *   **Jitter**: Micro-fluctuations in pitch (voice stability).
+        *   **Shimmer**: Micro-fluctuations in amplitude (voice quality).
+        *   **Formants**: Resonance frequencies of the vocal tract.
+    *   **Visual (Emotion) Analysis**: Uses the **FER (Facial Expression Recognition)** library to detect 7 basic emotions (angry, disgust, fear, happy, sad, surprise, neutral) from video frames.
+4.  **Prediction**: Features are aggregated and passed into a **Custom Machine Learning Model** (`model_custom.pkl`) to predict personality traits based on the **Big Five (OCEAN)** model:
+    *   Openness
+    *   Conscientiousness
+    *   Extraversion
+    *   Agreeableness
+    *   Neuroticism
+5.  **Scoring**: Results are compared against a baseline dataset (`medians.csv`) to provide relative scores.
 
-- **Multimodal Behavioral Analysis**
-  - Real-time facial emotion recognition (7 emotion classes)
-  - Speech pattern analysis with filler word detection
-  - Posture evaluation using 17-body keypoint tracking
-  - Vocal prosody analysis (pitch, jitter, shimmer)
-- **AI-Powered Feedback**
+#### **Key Models & Libraries**
+*   **Speech-to-Text**: AssemblyAI
+*   **NLP**: NLTK, PorterStemmer
+*   **Audio Processing**: Praat (Parselmouth), Librosa
+*   **Vision**: FER (using MTCNN/OpenCV under the hood)
+*   **ML Classifier**: Custom Pickle Model (Scikit-Learn based)
 
-  - Performance scoring across 5 metrics
-  - Timestamp-based improvement suggestions
-  - Comparative analytics against benchmark data
+---
 
-- **Enterprise-Grade Architecture**
-  - Dockerized microservices
-  - Role-based access control
-  - GDPR-compliant data handling
+### 2. Posture Analysis Service (Port 5000)
+This service focuses purely on non-verbal body language cues.
 
-## Methodology
+#### **Core Workflow**
+1.  **Input**: Receives a `video` file.
+2.  **Frame Processing**: Uses **OpenCV** to read the video frame-by-frame.
+3.  **Pose Detection**: Uses **Google MediaPipe Pose**, a state-of-the-art ML solution for high-fidelity body pose tracking. It extracts 33 3D landmarks on the whole body.
+4.  **Geometric Analysis**: Calculates vector angles between key body parts:
+    *   **Shoulder Alignment**: Angle between left and right shoulders (checking for slouching/leaning).
+    *   **Arm Openness**: Angles at the elbows and armpits to detect "closed" or "defensive" postures.
+    *   **Hand Gestures**: Tracking wrist movement relative to elbows.
+5.  **Rule-Based Feedback**: Angles are compared against ergonomic thresholds.
+    *   *Example*: If shoulder tilt > 16 degrees, flag as "Poor Alignment".
+    *   *Example*: If elbow angles remain static, suggest "More Hand Gestures".
 
-### Data Acquisition
+#### **Key Models & Libraries**
+*   **Pose Estimation**: MediaPipe Solutions
+*   **Video Processing**: OpenCV (cv2)
 
-- **Multimodal Input Collection**
-  - HD video recording (1080p @ 30fps)
-  - 16-bit audio capture at 48kHz
-  - Demographic-balanced dataset (500+ interviews)
-- **Preprocessing Pipeline**
-  - Temporal alignment of AV streams
-  - Background noise reduction (RNNoise)
-  - Adaptive lighting normalization
+---
 
-### Data Processing & Attribute Extraction
+### 3. Frontend Client (Port 5173)
+The user interface that ties everything together.
 
-| Component        | Technologies Used       | Key Metrics                          |
-| ---------------- | ----------------------- | ------------------------------------ |
-| Speech Analysis  | AssemblyAI, PRAAT       | WPM, filler frequency, pitch range   |
-| NLP Evaluation   | spaCy, LIWC             | Emotional polarity, analytical depth |
-| Visual Analysis  | MediaPipe, FER-2013 CNN | Eye contact ratio, posture angles    |
-| Vocal Assessment | OpenSMILE, Librosa      | Jitter (<1%), shimmer (<0.5dB)       |
+#### **Tech Stack**
+*   **Framework**: React 19
+*   **Build Tool**: Vite (fast, modern bundler)
+*   **Routing**: React Router v7
+*   **Runtime**: Bun (super fast JavaScript runtime)
+*   **Tailwind CSS**: For styling
 
-### Predictive Modeling
+#### **User Flow**
+1.  **Home Page**: User selects analysis type (Interview or Posture).
+2.  **Upload/Record**: User uploads a video file.
+3.  **Async Processing**: Client polls the backend task status APIs until analysis is complete.
+4.  **Result Interface**:
+    *   **Interview Page**: Displays transcript, personality radar chart, and specific tips.
+    *   **Posture Page**: Shows visual feedback on body alignment with pass/fail indicators.
 
-- **Model Architecture**
-  - XGBoost classifier (v1.5.2)
-  - 82 engineered features
-  - 5-fold cross-validation
-- **Performance Metrics**
-  - Precision: 92.4%
-  - Recall: 89.7%
-  - F1-score: 91.0%
+---
 
-### Feedback Generation
-
-- **Adaptive Scoring System**
-
-  ```python
-  def calculate_composite_score(metrics):
-      weights = {
-          'verbal': 0.35,
-          'vocal': 0.25,
-          'visual': 0.40
-      }
-      return sum(metrics[dim] * weights[dim] for dim in weights)
-
-  ```
-
-- **Personalized Recommendations**
-  - Vocabulary enhancement strategies
-  - Posture correction exercises
-  - Anxiety reduction techniques
-
-### System Implementation
-
-- **Deployment Architecture**
-
-  - Frontend: React.js
-  - Backend: Flask REST API
-  - AI Services: Python 3.9
-
-- **Performance Benchmarks**
-  - Latency: <2.8s for 5-min interview
-  - Throughput: 25 concurrent sessions
-  - Accuracy: ±4% margin of error
-
-## System Architecture
-
-![System Architecture for Interview Analysis Microservice](./readme-assets/sys-arch_interview-analysis-microserv.jpg)
-![System Architecture for Posture Analysis Microservice](./readme-assets/sys-arch_posture-analysis-microserv.png)
-
-## Installation
+## 🛠️ Setup & Installation
 
 ### Prerequisites
+*   **OS**: Windows, macOS, or Linux
+*   **Python 3.9+** (via Conda recommended)
+*   **Node.js or Bun**
+*   **AssemblyAI API Key** (Free tier available)
 
-- Docker 20.10+
-- NVIDIA GPU (CUDA 11.7)
-- 8GB RAM minimum
-- Conda
+### Step 1: Install Dependencies
 
-### Setup Instructions
+**1. Interview Analysis Service**
+```bash
+cd src/interview-analysis-service
+conda env create -f environment.yml
+```
 
-1. Clone repository:
+**2. Posture Analysis Service**
+```bash
+cd src/posture-analysis-service
+conda env create -f environment.yml
+```
 
-   ```bash
-   git clone https://github.com/gargujjwal/aceinterview.git
-   cd aceinterview
-   ```
+**3. Client**
+```bash
+cd src/client
+bun install
+```
 
-2. Validated environment:
+### Step 2: Configuration (.env)
 
-   ```bash
-    ./script/validate-env.sh
-   ```
+**Interview Service** (`src/interview-analysis-service/.env`):
+```ini
+ASSEMBLYAI_API_KEY=your_key_here
+FLASK_DEBUG=1
+```
 
-3. Build environment:
+**Posture Service** (`src/posture-analysis-service/.env`):
+```ini
+FLASK_DEBUG=1
+```
 
-   ```bash
-    ./script/build.sh
-   ```
+**Client** (`src/client/.env`):
+```ini
+VITE_INTERVIEW_ANALYSIS_MICROSVC_BASE_URL=http://localhost:4000
+VITE_POSTURE_ANALYSIS_MICROSVC_BASE_URL=http://localhost:5000
+```
 
-4. Start services:
+---
 
-   ```bash
-    ./script/start.sh
-   ```
+## 🚀 Running the Project
 
-5. Access interface at `http://localhost:3000`
+You need to run all three services simultaneously in separate terminals.
 
-## Built With
+**Terminal 1: Interview Backend**
+```bash
+cd src/interview-analysis-service
+conda run -n interview-analysis-env python -u app.py
+```
 
-- [![Python][Python]][Python-url]
-- [![React][React.js]][React-url]
-- [![Docker][Docker]][Docker-url]
+**Terminal 2: Posture Backend**
+```bash
+cd src/posture-analysis-service
+conda run -n posture-analysis-env python -u app.py
+```
 
-## License
+**Terminal 3: Frontend**
+```bash
+cd src/client
+bun run dev
+```
 
-Distributed under the MIT License. See `LICENSE` for details.
+Visit the app at **http://localhost:5173**
 
-## Contact
+---
 
-**Ujjwal Garg** - [@ujjwalgarg](https://github.com/gargujjwal)
-**Project Advisor**: Prof. Senthil Kumaran U
-**Institution**: Vellore Institute of Technology
+## 📂 Project Structure
 
-Project Link: [https://github.com/gargujjwal/aceinterview](https://github.com/gargujjwal/aceinterview)
-
-## Acknowledgements
-
-- [https://github.com/jaspreet3397/Video-Interview-Analysis](https://github.com/jaspreet3397/Video-Interview-Analysis)
-- [https://github.com/PALASH-BAJPAI/HiRe_Automated_Interviewing_tool](https://github.com/PALASH-BAJPAI/HiRe_Automated_Interviewing_tool)
-- [https://github.com/yuvraaj2002/InterviewX/tree/master](https://github.com/yuvraaj2002/InterviewX/tree/master)
-- [https://github.com/malhaar2002/interview-analysis](https://github.com/malhaar2002/interview-analysis)
-
-<!-- MARKDOWN LINKS -->
-
-[contributors-shield]: https://img.shields.io/github/contributors/gargujjwal/aceinterview.svg?style=for-the-badge
-[contributors-url]: https://github.com/gargujjwal/aceinterview/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/gargujjwal/aceinterview.svg?style=for-the-badge
-[forks-url]: https://github.com/gargujjwal/aceinterview/network/members
-[stars-shield]: https://img.shields.io/github/stars/gargujjwal/aceinterview.svg?style=for-the-badge
-[stars-url]: https://github.com/gargujjwal/aceinterview/stargazers
-[issues-shield]: https://img.shields.io/github/issues/gargujjwal/aceinterview.svg?style=for-the-badge
-[issues-url]: https://github.com/gargujjwal/aceinterview/issues
-[license-shield]: https://img.shields.io/github/license/gargujjwal/aceinterview.svg?style=for-the-badge
-[license-url]: https://github.com/gargujjwal/aceinterview/blob/master/LICENSE
-[Python]: https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white
-[Python-url]: https://www.python.org/
-[React.js]: https://img.shields.io/badge/React-18.2-61DAFB?logo=react&logoColor=black
-[React-url]: https://reactjs.org/
-[Docker]: https://img.shields.io/badge/Docker-20.10+-2496ED?logo=docker&logoColor=white
-[Docker-url]: https://www.docker.com/
+```
+aceinterview/
+├── src/
+│   ├── client/                          # React Frontend
+│   │   ├── app/
+│   │   │   ├── routes/                  # Pages (Home, Analysis, About)
+│   │   │   ├── components/              # UI Components (Navbar, Charts)
+│   │   │   ├── backend/                 # API Clients (Axios setup)
+│   │
+│   ├── interview-analysis-service/      # Python Backend 1
+│   │   ├── api/routes.py                # Flask Endpoints
+│   │   ├── services/
+│   │   │   └── prediction_service.py    # Main Logic Coordinator
+│   │   ├── utils/
+│   │   │   ├── emotion.py               # FER Logic
+│   │   │   ├── lexical_extraction.py    # NLP Logic
+│   │   │   └── praat_extraction.py      # Audio Logic
+│   │   ├── models/                      # .pkl ML Models
+│   │
+│   ├── posture-analysis-service/        # Python Backend 2
+│   │   ├── api/routes.py                # Flask Endpoints
+│   │   ├── core/
+│   │   │   ├── pose_detector.py         # MediaPipe Wrapper
+│   │   │   └── video_processor.py       # Frame Loop
+│   │   ├── services/analysis_service.py # Logic Coordinator
+│   │   └── utils/angle_utils.py         # Geometry Math
+```
